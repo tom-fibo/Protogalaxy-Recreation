@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3 uid="uid://p3ww1h58mvmo"]
+
+[ext_resource type="Texture2D" uid="uid://ck3x0krr27j7e" path="res://Assets/Images/BackgroundElements/Star.png" id="1_gcmju"]
+
+[node name="BackgroundObject" type="Parallax2D"]
+z_index = -100
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+z_index = -100
+scale = Vector2(15, 15)
+texture = ExtResource("1_gcmju")

@@ -1,0 +1,32 @@
+[gd_scene load_steps=5 format=3 uid="uid://bw06eufkpdwki"]
+
+[ext_resource type="Texture2D" uid="uid://crsmxqupiiq4h" path="res://Assets/Images/EngineFire1.png" id="1_wdkus"]
+[ext_resource type="Texture2D" uid="uid://deee4xlcjmgvr" path="res://Assets/Images/EngineFire2.png" id="2_k1shi"]
+[ext_resource type="Texture2D" uid="uid://c3px1t0lkipkp" path="res://Assets/Images/EngineFire4.png" id="3_ir4ci"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_kg06x"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_wdkus")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_k1shi")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_wdkus")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_ir4ci")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="EngineFire" type="AnimatedSprite2D"]
+scale = Vector2(15, 15)
+sprite_frames = SubResource("SpriteFrames_kg06x")
+autoplay = "default"
+frame_progress = 0.441273
+offset = Vector2(0, 6.5)

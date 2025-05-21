@@ -1,0 +1,33 @@
+[gd_scene load_steps=4 format=3 uid="uid://emelg7le6y53"]
+
+[ext_resource type="Texture2D" uid="uid://bgbqowgwhlehv" path="res://Assets/Images/BackgroundElements/Empty.png" id="1_0v4ag"]
+[ext_resource type="Script" path="res://space_background.gd" id="1_ca3k8"]
+[ext_resource type="PackedScene" uid="uid://cf4wwmmtd3jf4" path="res://ship.tscn" id="1_xy7el"]
+
+[node name="Space" type="Node2D"]
+
+[node name="Background" type="Node2D" parent="."]
+z_index = -100
+script = ExtResource("1_ca3k8")
+
+[node name="BlackBackground" type="Sprite2D" parent="Background"]
+z_index = -201
+scale = Vector2(1e+06, 1e+06)
+texture = ExtResource("1_0v4ag")
+
+[node name="Player_Ship" parent="." node_paths=PackedStringArray("target") instance=ExtResource("1_xy7el")]
+z_index = 10
+position = Vector2(0.5, 0.5)
+state = 2
+set_ship = 1
+target = NodePath("../Enemy_Ship")
+camera_enabled = true
+
+[node name="Enemy_Ship" parent="." node_paths=PackedStringArray("target") instance=ExtResource("1_xy7el")]
+z_index = 1
+position = Vector2(0.5, 1000.5)
+rotation = 3.14159
+state = 3
+set_ship = 2
+target = NodePath("../Player_Ship")
+ship = Array[Array]([["cannon", "cannon", "cannon"], ["reflector", "core", "reflector"], ["engine", "engine", "engine"]])

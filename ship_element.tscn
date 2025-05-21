@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://cdipipdufuqqs"]
+
+[ext_resource type="Texture2D" uid="uid://rr35uyl0grdr" path="res://Assets/Images/ShipElements/Frame.png" id="1_cdcao"]
+[ext_resource type="Script" path="res://ship_element.gd" id="2_40r2h"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_v3iv2"]
+size = Vector2(6, 6)
+
+[node name="ShipElement" type="Sprite2D"]
+scale = Vector2(15, 15)
+texture = ExtResource("1_cdcao")
+script = ExtResource("2_40r2h")
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_mask = 3
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("RectangleShape2D_v3iv2")
+
+[connection signal="area_entered" from="Area2D" to="." method="_on_area_2d_area_entered"]
+[connection signal="input_event" from="Area2D" to="." method="_input_event"]

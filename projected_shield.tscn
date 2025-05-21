@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3 uid="uid://cscs2qtkef5f7"]
+
+[ext_resource type="Texture2D" uid="uid://cn6gxq6acteoe" path="res://Assets/Images/FullShield.png" id="1_mle7e"]
+[ext_resource type="Script" path="res://projected_shield.gd" id="2_kcy2h"]
+
+[node name="ProjectedShield" type="Sprite2D"]
+scale = Vector2(15, 15)
+texture = ExtResource("1_mle7e")
+script = ExtResource("2_kcy2h")
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="OrthogonalCollision" type="CollisionPolygon2D" parent="Area2D"]
+polygon = PackedVector2Array(-14, -14, -11, -17, -7, -19, 0, -20, 7, -19, 11, -17, 14, -14)
+disabled = true
+
+[node name="DiagonalCollision" type="CollisionPolygon2D" parent="Area2D"]
+polygon = PackedVector2Array(0, -20, 7, -19, 11, -17, 17, -11, 19, -7, 20, 0)
+disabled = true

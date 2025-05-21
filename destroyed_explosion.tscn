@@ -1,0 +1,83 @@
+[gd_scene load_steps=13 format=3 uid="uid://c4frsvrl5buvb"]
+
+[ext_resource type="Texture2D" uid="uid://cf2hnsxph0nwe" path="res://Assets/Images/DestroyedPart.png" id="1_6ng30"]
+[ext_resource type="Script" path="res://destroyed_explosion.gd" id="5_207n6"]
+[ext_resource type="Texture2D" uid="uid://be2qq486t3oov" path="res://Assets/Images/Explosion.png" id="6_tsp5s"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6228r"]
+atlas = ExtResource("1_6ng30")
+region = Rect2(0, 0, 7, 7)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_uahya"]
+atlas = ExtResource("1_6ng30")
+region = Rect2(7, 0, 7, 7)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ldu0h"]
+atlas = ExtResource("1_6ng30")
+region = Rect2(0, 7, 7, 7)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_omcvj"]
+atlas = ExtResource("1_6ng30")
+region = Rect2(7, 7, 7, 7)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pj886"]
+atlas = ExtResource("1_6ng30")
+region = Rect2(0, 14, 7, 7)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_m6k3r"]
+atlas = ExtResource("6_tsp5s")
+region = Rect2(0, 0, 17, 17)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ktua6"]
+atlas = ExtResource("6_tsp5s")
+region = Rect2(17, 0, 17, 17)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3cuad"]
+atlas = ExtResource("6_tsp5s")
+region = Rect2(0, 17, 17, 17)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_kg06x"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6228r")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uahya")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ldu0h")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_omcvj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pj886")
+}],
+"loop": false,
+"name": &"default",
+"speed": 4.0
+}, {
+"frames": [{
+"duration": 3.0,
+"texture": SubResource("AtlasTexture_m6k3r")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ktua6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3cuad")
+}],
+"loop": false,
+"name": &"explosion",
+"speed": 4.0
+}]
+
+[node name="DestroyedExplosion" type="AnimatedSprite2D"]
+scale = Vector2(15, 15)
+sprite_frames = SubResource("SpriteFrames_kg06x")
+animation = &"explosion"
+autoplay = "default"
+script = ExtResource("5_207n6")
+
+[connection signal="animation_finished" from="." to="." method="_on_animation_finished"]

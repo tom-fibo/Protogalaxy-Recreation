@@ -1,0 +1,62 @@
+[gd_scene load_steps=6 format=3 uid="uid://dlj3rl1axyxml"]
+
+[ext_resource type="PackedScene" uid="uid://cf4wwmmtd3jf4" path="res://ship.tscn" id="1_ra2tf"]
+[ext_resource type="Script" path="res://palate.gd" id="2_70i25"]
+[ext_resource type="Texture2D" uid="uid://bcpe4xj160de5" path="res://Assets/Images/SelectedShipPart.png" id="2_binhh"]
+[ext_resource type="Script" path="res://begin.gd" id="4_nav6u"]
+[ext_resource type="Script" path="res://info_panel.gd" id="5_igvsc"]
+
+[node name="Ship_Editor" type="Node2D"]
+
+[node name="Ship" parent="." instance=ExtResource("1_ra2tf")]
+position = Vector2(929.5, 409.5)
+state = 1
+set_ship = 3
+ship_spacing = 10
+
+[node name="Palate" type="Node2D" parent="." node_paths=PackedStringArray("selected_indicator")]
+unique_name_in_owner = true
+position = Vector2(89.5, 89.5)
+script = ExtResource("2_70i25")
+selected_indicator = NodePath("SelectedIndicator")
+
+[node name="SelectedIndicator" type="Sprite2D" parent="Palate"]
+position = Vector2(-500, -500)
+scale = Vector2(15, 15)
+texture = ExtResource("2_binhh")
+
+[node name="Begin" type="Button" parent="."]
+offset_left = 774.0
+offset_top = 810.0
+offset_right = 930.0
+offset_bottom = 903.0
+scale = Vector2(2, 2)
+theme_override_font_sizes/font_size = 40
+text = "Ready"
+script = ExtResource("4_nav6u")
+
+[node name="InfoPanel" type="Panel" parent="."]
+unique_name_in_owner = true
+z_index = 200
+offset_left = -299.0
+offset_top = -103.0
+offset_right = -107.0
+offset_bottom = -28.0
+script = ExtResource("5_igvsc")
+
+[node name="Label" type="Label" parent="InfoPanel"]
+layout_mode = 0
+offset_right = 61.0
+offset_bottom = 23.0
+theme_override_font_sizes/font_size = 32
+text = "part info"
+
+[node name="ReferenceRect" type="ReferenceRect" parent="InfoPanel"]
+layout_mode = 0
+offset_right = 165.0
+offset_bottom = 63.0
+border_color = Color(0.851431, 0.849572, 0.771859, 1)
+border_width = 2.0
+editor_only = false
+
+[connection signal="button_down" from="Begin" to="Begin" method="_on_button_down"]
