@@ -21,7 +21,7 @@ var PART_TEXTURES = {
 	"cluster": load("res://Assets/Images/ShipElements/ClusterFragmentGun.png"),
 }
 var PART_DESCRIPTIONS = {
-	"core": "Core:\nThe center of command in your ship.\nAs long as one exists on your ship,\nyou can control your movement.\n\nWeight: 5",
+	"core": "Core:\nThe center of command in your ship.\nAs long as one exists on your ship,\nyou can control your movement.\n\nAlso, use " + keybind("zoom_in") + " and " + keybind("zoom_out") + " to zoom.\n\nWeight: 5",
 	"frame": "Frame:\nAn empty spot, ready to be filled.\n\nWeight: 1",
 	"none": "Empty:\nEmpty space. If a line of empty space\nsplits your ship (while building\nor during combat), it will seperate.\n\nWeight: 0",
 	"cannon": "Cannon:\nFires when you press "+keybind("shoot_cannons")+", shooting a\nsimple projectile that can destroy enemy ship parts.\n\nCan't have another ship part directly above it.\n\nWeight: 1",
@@ -35,7 +35,9 @@ var PART_DESCRIPTIONS = {
 	"missilelauncher": "Missile Launcher:\nFires when you press "+keybind("shoot_missile")+", shooting a\nseeking missile which will explode on collision.\n\nExpends 2 energy per fire.\n\nWeight: 1",
 	"cluster": "Cluster Fragment Gun:\nFires when you press "+keybind("shoot_cluster")+", shooting an\nexplosive projectile that splits into 8 additional\nshots on collision, dealing greater damage.\n\nExpends 2 energy per fire.\n\nWeight: 1",
 }
+var camera_zoom := 0.3
 var player_ship : Array
+var player_ship_size = 3
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -49,4 +51,12 @@ func keybind(action: String) -> String:
 	for input_event in InputMap.action_get_events(action):
 		if input_event is InputEventKey:
 			return OS.get_keycode_string(input_event.physical_keycode)
+		if input_event is InputEventMouseButton:
+			match input_event.button_index:
+				MOUSE_BUTTON_LEFT:
+					return "Left Click"
+				MOUSE_BUTTON_RIGHT:
+					return "Right Click"
+				MOUSE_BUTTON_MIDDLE:
+					return "Middle Click"
 	return "�"

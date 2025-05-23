@@ -61,13 +61,17 @@ var engine_fire := {}
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	active = not (state == Ship_State.EDITOR or state == Ship_State.NONE)
+	if set_ship == Set_Ship_Options.PLAYER and not Global.player_ship:
+		%InfoPanel.set_text("Use " + Global.keybind("select_part") + " to select a ship part,\nthen click a spot on your ship\nto place it (X represents empty).\nUse " + Global.keybind("view_part_info") + " to view each part's effect.\nAfter starting, use " + Global.keybind("restart") + " to return to the editor.", Vector2(930, 903), 40, true)
+		%Begin.visible = false
+		set_ship = Set_Ship_Options.DEFAULT
 	match set_ship:
 		Set_Ship_Options.PLAYER:
-			ship = Global.player_ship
+			ship = Global.player_ship.duplicate(true)
 		Set_Ship_Options.ENEMY:
 			gen_ship(3, 1)
 		Set_Ship_Options.DEFAULT:
-			gen_ship(3, -1)
+			gen_ship(Global.player_ship_size, -1)
 	var scale_down = 1
 	if state == Ship_State.EDITOR:
 		while ship_spacing*15*scale_down*len(ship) > 800:
@@ -219,6 +223,7 @@ func _process(delta: float) -> void:
 		#Adjust camera
 		$"Camera2D".position += camera_velocity * delta
 		camera_velocity = camera_velocity.move_toward(ship_center_of_mass - $"Camera2D".position, 1000*delta)
+		$"Camera2D".zoom = Vector2(Global.camera_zoom, Global.camera_zoom)
 
 func gen_ship(size : int, difficulty : int) -> void:
 	ship = []

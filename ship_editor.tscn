@@ -11,7 +11,7 @@
 [node name="Ship" parent="." instance=ExtResource("1_ra2tf")]
 position = Vector2(929.5, 409.5)
 state = 1
-set_ship = 3
+set_ship = 1
 ship_spacing = 10
 
 [node name="Palate" type="Node2D" parent="." node_paths=PackedStringArray("selected_indicator")]
@@ -26,6 +26,7 @@ scale = Vector2(15, 15)
 texture = ExtResource("2_binhh")
 
 [node name="Begin" type="Button" parent="."]
+unique_name_in_owner = true
 offset_left = 774.0
 offset_top = 810.0
 offset_right = 930.0

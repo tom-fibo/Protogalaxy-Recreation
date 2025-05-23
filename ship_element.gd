@@ -44,8 +44,11 @@ func update_texture():
 	if state == Ship_Element_State.ONSHIP:
 		set_position(Vector2(x*my_ship.ship_spacing*15, y*my_ship.ship_spacing*15))
 	if type() == "none":
-		if state == Ship_Element_State.PALATE or get_parent().state == Ship.Ship_State.EDITOR:
-			texture = preload("res://Assets/Images/ShipElements/ClearPart.png")
+		if state == Ship_Element_State.PALATE or my_ship.state == Ship.Ship_State.EDITOR:
+			if state == Ship_Element_State.ONSHIP:
+				texture = preload("res://Assets/Images/ShipElements/EmptyPart.png")
+			else:
+				texture = preload("res://Assets/Images/ShipElements/ClearPart.png")
 			return
 		queue_free()
 	texture = Global.PART_TEXTURES[type()]
@@ -78,16 +81,7 @@ func _input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 			var part_info = "Part info not found!"
 			if type() in Global.PART_DESCRIPTIONS:
 				part_info = Global.PART_DESCRIPTIONS[type()]
-			var info_panel : Panel = $"../%InfoPanel"
-			var info_label : Label = info_panel.get_child(0)
-			var info_border : ReferenceRect = info_panel.get_child(1)
-			info_panel.cooldown = 0.1
-			info_label.text = part_info
-			info_panel.size = info_label.get_theme_font("font").get_multiline_string_size(part_info, 0, -1, info_label.get_theme_font_size("font_size")) + Vector2(0, (len(part_info.split("\n"))-1)*3)
-			info_border.size = info_panel.size
-			info_panel.position = global_position + Vector2(4.5*15, -3.5*15)
-			if info_panel.position.y + info_panel.size.y + 30 > get_viewport().content_scale_size.y:
-				info_panel.position.y = get_viewport().content_scale_size.y - info_panel.size.y - 30
+			$"../%InfoPanel".set_text(part_info, global_position + Vector2(4.5*15, -3.5*15))
 			$"../%Palate".selected_ship_element = ""
 			$"../%Palate".selected_indicator.position = Vector2(10000, 10000)
 
