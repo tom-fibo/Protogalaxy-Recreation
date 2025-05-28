@@ -8,7 +8,11 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if Input.is_action_pressed("zoom_in"):
 		Global.camera_zoom *= pow(2, delta)
+		if Global.camera_zoom > 2:
+			Global.camera_zoom = 2
 	if Input.is_action_pressed("zoom_out"):
 		Global.camera_zoom *= pow(.5, delta)
+		if Global.camera_zoom < .12:
+			Global.camera_zoom = .12
 	if Input.is_action_just_pressed("restart"):
 		get_tree().change_scene_to_file("res://ship_editor.tscn")

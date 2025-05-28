@@ -422,7 +422,7 @@ func calc_engine_directions() -> void:
 			engine_directions["downright"].append(engines[i])
 			remaining_down_engines -= 1
 
-func get_target_directions(delta := 0) -> Dictionary:
+func get_target_directions(delta := 0.0) -> Dictionary:
 	if len(locate_part_in_ship(["core", "missile"])) == 0:
 		if target_directions:
 			return target_directions
@@ -458,9 +458,11 @@ func get_target_directions(delta := 0) -> Dictionary:
 		dist = position.distance_to(target.position)
 		angle_to_target = fmod((position.angle_to_point(target.position)) - rotation + PI + PI/2, TAU) - PI
 		rot_error_integral += angle_to_target * delta
+		if sign(rot_error_integral*angle_to_target) < 0:
+			rot_error_integral *= pow(0.1, delta)
 		abs_angle_to_target = abs(angle_to_target)
 		predicted_angle = angle_to_target + (rot_velocity / -log(ROT_INERTIA))
-		rot_total = predicted_angle + rot_error_integral/20 + rot_velocity / 5
+		rot_total = predicted_angle + rot_error_integral/20 + rot_velocity/120
 	match state:
 		Ship_State.PLAYER:
 			return {
