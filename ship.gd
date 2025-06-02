@@ -24,14 +24,15 @@ enum Ship_State {NONE, EDITOR, PLAYER, ENEMY, MISSILE, NOAI}
 @export var set_ship : Set_Ship_Options = Set_Ship_Options.NONE
 @export var target : Ship
 @export var camera_enabled = false
+static var camera_count = 0
 
 @export var ship_spacing := 7
 var active : bool
 
 @export var ship : Array[Array] = [
-	["frame", "frame", "frame"],
-	["frame", "core",  "frame"],
-	["frame", "frame", "frame"],
+	[&"frame", &"frame", &"frame"],
+	[&"frame", &"core",  &"frame"],
+	[&"frame", &"frame", &"frame"],
 ]
 var ship_elements : Array[Array]
 var ship_mass := 5
@@ -53,7 +54,7 @@ var rot_error_integral := 0.0
 
 var cannon_cooldown := 0.0
 var shield_cooldown := 0.0
-var solar_panel_cooldown := 0.0
+var solar_panel_cooldown := SOLAR_PANEL_COOLDOWN
 var cluster_cooldown := 0.0
 var missile_cooldown := 0.0
 var engine_fire := {}
@@ -69,7 +70,7 @@ func _ready() -> void:
 		Set_Ship_Options.PLAYER:
 			ship = Global.player_ship.duplicate(true)
 		Set_Ship_Options.ENEMY:
-			gen_ship(3, 1)
+			gen_ship(Global.player_ship_size, 1)
 		Set_Ship_Options.DEFAULT:
 			gen_ship(Global.player_ship_size, -1)
 	var scale_down = 1
@@ -90,6 +91,8 @@ func _ready() -> void:
 			ship_row.append(new_element)
 		ship_elements.append(ship_row)
 	$"Camera2D".enabled = camera_enabled
+	if camera_enabled:
+		camera_count+=1
 	if active:
 		split_ship()
 		for loc in locate_part_in_ship(["engine", "backwardengine", "missile"]):
@@ -227,37 +230,95 @@ func _process(delta: float) -> void:
 
 func gen_ship(size : int, difficulty : int) -> void:
 	ship = []
+	var max_energy := 0
+	var half_size : int = (size-1) / 2
+	var left_engines := 0
+	var right_engines := 0
+	var has_special := false
 	for y in range(size):
 		var ship_row = []
 		for x in range(size):
-			var ele = "frame"
+			var ele := &"frame"
 			if difficulty == -1:
-				ele = "none"
-			if x*2 == size-1 and y*2 == size-1:
-				ele = "core"
+				ele = &"none"
+			if x == half_size and y == half_size:
+				ele = &"core"
 			elif difficulty > 0:
-				ele = "battery1"
-				if randf() < .2:
-					ele = "volatile2"
-				if randf() < .3:
-					ele = "solar"
-				if randf() < .6:
-					ele = "reflector"
-				if randf() < .3:
-					ele = "underbelly"
+				var dist = max(abs(x-half_size), abs(y-half_size)) / (half_size)
+				if size < 5:
+					dist -= 0.3
+				var rand_dist = dist + randfn(0, 0.3)
+				if rand_dist > 0.7:
+					ele = &"reflector"
+				elif rand_dist < 0.4 and randf() < .8:
+					ele = &"volatile2"
+				else:
+					ele = &"battery1"
+				if randf() - rand_dist/6 < .1:
+					ele = &"underbelly"
 				if y == 0:
-					ele = "cannon"
-					if randf() < .05:
-						ele = "cluster"
-					if randf() < .2:
-						ele = "backwardengine"
-				if y*2 == size-3 and x*2 == size-1 and randf() < .9:
-					ele = "shield"
+					ele = &"cannon"
+					if (x == 0 or x == size-1) and randf() < .5:
+						ele = &"backwardengine"
 				if y == size-1:
-					if randf() < .95:
-						ele = "engine"
+					ele = &"engine"
+				if y == half_size - 1 and x == half_size:
+					ele = &"shield"
+				if ele == &"battery1":
+					max_energy += 1
+				elif ele == &"volatile2":
+					max_energy += 2
+				elif ele == &"engine" or ele == &"backwardengine":
+					if (abs(x-half_size) >= half_size/3):
+						if (ele == &"backwardengine") != (x < half_size):
+							right_engines += 1
+						else:
+							left_engines += 1
 			ship_row.append(ele)
 		ship.append(ship_row)
+	if difficulty > 0:
+		if max_energy < 2:
+			var prev_ele = read_ship(0, 1)
+			if prev_ele == &"battery1": #prev_ele being volatile -> maxenergy >= 2
+				max_energy -= 1
+			write_ship(&"volatile2", 0, 1)
+			max_energy += 2
+		var energy_weight = max_energy / 1.8 / size / size
+		for y in range(size):
+			for x in range(size):
+				var part_weight = -.1
+				if ship[y][x] in [&"cannon", &"engine", &"backwardengine"]:
+					part_weight = -.2
+				if ship[y][x] == &"core" or \
+						(max_energy <= 3 and ship[y][x] == &"volatile2") or \
+						(max_energy <= 2 and ship[y][x] == &"battery1") or \
+						(ship[y][x] == &"engine" or ship[y][x] == &"backwardengine" and \
+							(left_engines <= 1 and (ship[y][x] == &"engine") == (x-half_size>0)) or \
+							(right_engines<= 1 and (ship[y][x] == &"engine") == (x-half_size<0))):
+					part_weight = -100
+				part_weight += energy_weight
+				if randf() < part_weight:
+					if ship[y][x] == &"battery1":
+						max_energy -= 1
+					elif ship[y][x] == &"volatile2":
+						max_energy -= 2
+					elif ship[y][x] == &"engine" or ship[y][x] == &"backwardengine":
+						if (abs(x-half_size) >= half_size/3):
+							if (ship[y][x] == &"backwardengine") != (x < half_size):
+								right_engines -= 1
+							else:
+								left_engines -= 1
+					ship[y][x] = &"solar"
+					energy_weight -= .02
+					if not has_special and randf() < energy_weight * 1.5:
+						if y == 0:
+							ship[y][x] = &"missilelauncher"
+							has_special = true
+							energy_weight += .1
+						elif randf() < .5:
+							ship[y][x] = &"cluster"
+							has_special = true
+							energy_weight += .08
 
 func apply_force(force : Vector2, relative_loc : Vector2, absolute_rotation := false, mult_loc := false, rot_mult := 1.0) -> void:
 	if mult_loc:
@@ -270,7 +331,7 @@ func apply_force(force : Vector2, relative_loc : Vector2, absolute_rotation := f
 
 func spend_power(amount := 1) -> bool:
 	var batteries : Array = locate_part_in_ship("battery"+str(1 if amount>0 else 0))
-	var double = locate_part_in_ship("volatile"+str(2 if amount>0 else 0))
+	var double : Array = locate_part_in_ship("volatile"+str(2 if amount>0 else 0))
 	batteries.append_array(double)
 	batteries.append_array(double)
 	batteries.append_array(locate_part_in_ship("volatile1"))
@@ -280,9 +341,9 @@ func spend_power(amount := 1) -> bool:
 		return false
 	for i in range(min(abs(amount),len(batteries))):
 		var loc = batteries[i]
-		var old_battery = read_ship(loc[0],loc[1])
-		write_ship(old_battery.substr(0,len(old_battery)-1) + str(int(old_battery[-1]) + (-1 if amount>0 else 1)), loc[0], loc[1])
-		update_part(loc[0], loc[1])
+		var old_battery := str(read_ship(loc[0],loc[1]))
+		write_ship(old_battery.substr(0,len(old_battery)-1) + str(int(old_battery[-1]) + (-1 if amount>0 else 1)), loc.x, loc.y)
+		update_part(loc.x, loc.y)
 	return true
 
 func split_ship():
@@ -304,7 +365,6 @@ func split_ship():
 					for offset in [Vector2.UP, Vector2(-1, -1), Vector2.LEFT, Vector2(-1, 1), Vector2.DOWN, Vector2(1, 1), Vector2.RIGHT, Vector2(1, -1)]:
 						tocheck.append(curcheck + offset)
 			groups.append(group)
-	print(len(groups))
 	while len(groups) > 1:
 		var new_ship_blocks = groups.pop_back()
 		var new_ship = preload("res://ship.tscn").instantiate()
@@ -325,6 +385,10 @@ func split_ship():
 		new_ship.target_directions = target_directions
 		$"/root/Space/".add_child.call_deferred(new_ship)
 	if len(groups) == 0:
+		if camera_enabled:
+			camera_count -= 1
+			if camera_count == 0:
+				$Camera2D.reparent(get_parent())
 		queue_free()
 		return
 	update_mass()
@@ -361,9 +425,9 @@ func update_mass() -> void:
 	calc_engine_directions()
 
 func calc_engine_directions() -> void:
-	if len(locate_part_in_ship(["core", "missile"])) < 0:
+	if len(locate_part_in_ship([&"core", &"missile"])) < 0:
 		return
-	var engines := locate_part_in_ship(["engine", "backwardengine", "missile"])
+	var engines := locate_part_in_ship([&"engine", &"backwardengine", &"missile"])
 	engine_directions = {}
 	for dir in ["up","upright","right","downright","down","downleft","left","upleft"]:
 		engine_directions[dir] = []
@@ -376,7 +440,7 @@ func calc_engine_directions() -> void:
 	for i in range(len(engines)):
 		var engine_loc = engines[i]
 		var engine_force = -1
-		if read_ship(engine_loc.x, engine_loc.y) == "backwardengine":
+		if read_ship(engine_loc.x, engine_loc.y) == &"backwardengine":
 			engine_force = 1
 		var engine_rot_force = (engine_loc - ship_center_of_mass/15/ship_spacing) \
 				.cross(Vector2(0, engine_force))
@@ -423,7 +487,7 @@ func calc_engine_directions() -> void:
 			remaining_down_engines -= 1
 
 func get_target_directions(delta := 0.0) -> Dictionary:
-	if len(locate_part_in_ship(["core", "missile"])) == 0:
+	if len(locate_part_in_ship([&"core", &"missile"])) == 0:
 		if target_directions:
 			return target_directions
 	var default_directions = {
@@ -455,14 +519,14 @@ func get_target_directions(delta := 0.0) -> Dictionary:
 					nearest_ship = child
 			target = nearest_ship
 	if target:
-		dist = position.distance_to(target.position)
-		angle_to_target = fmod((position.angle_to_point(target.position)) - rotation + PI + PI/2, TAU) - PI
+		dist = (position + ship_center_of_mass).distance_to(target.position + target.ship_center_of_mass)
+		angle_to_target = fmod(((position + ship_center_of_mass).angle_to_point(target.position + target.ship_center_of_mass)) - rotation + PI + PI/2, TAU) - PI
 		rot_error_integral += angle_to_target * delta
 		if sign(rot_error_integral*angle_to_target) < 0:
 			rot_error_integral *= pow(0.1, delta)
 		abs_angle_to_target = abs(angle_to_target)
 		predicted_angle = angle_to_target + (rot_velocity / -log(ROT_INERTIA))
-		rot_total = predicted_angle + rot_error_integral/20 + rot_velocity/120
+		rot_total = predicted_angle + rot_error_integral/16
 	match state:
 		Ship_State.PLAYER:
 			return {
@@ -483,7 +547,7 @@ func get_target_directions(delta := 0.0) -> Dictionary:
 				"backward":dist<750 and abs_angle_to_target<PI/4,
 				"left": rot_total<-.5,
 				"right":rot_total> .5,
-				"shoot": dist*abs_angle_to_target<1000*PI and abs_angle_to_target<1.5*PI,
+				"shoot": dist<20000 and abs_angle_to_target<1.5*PI and dist*abs_angle_to_target<1000*PI,
 				"shield": abs_angle_to_target < 1 and dist < 1500,
 				"cluster": dist<1250 and abs_angle_to_target<PI/8,
 				"missile": true,
@@ -518,7 +582,7 @@ func locate_part_in_ship(part) -> PackedVector2Array:
 	var parts = PackedVector2Array()
 	for c in range(len(ship)):
 		for r in range(len(ship[c])):
-			if (part is String and ship[c][r] == part) or (part is Array and ship[c][r] in part):
+			if ((part is String or part is StringName) and ship[c][r] == part) or (part is Array and ship[c][r] in part):
 				parts.append(Vector2(r-(ship[0].size()-1)/2, c-(ship.size()-1)/2))
 	return parts
 
@@ -565,11 +629,11 @@ func get_element(x : int, y : int) -> Ship_Element:
 	x += (len(ship_elements[0])-1)/2
 	return ship_elements[y][x]
 
-func read_ship(x : int, y : int) -> String:
+func read_ship(x : int, y : int) -> StringName:
 	expand_ship(x, y)
 	return ship[y + (ship.size()-1)/2][x + (ship[0].size()-1)/2]
 
-func write_ship(val : String, x : int, y : int) -> void:
+func write_ship(val : StringName, x : int, y : int) -> void:
 	expand_ship(x, y)
 	ship[y + (ship.size()-1)/2][x + (ship[0].size()-1)/2] = val
 

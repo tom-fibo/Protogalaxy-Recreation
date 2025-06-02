@@ -17,19 +17,16 @@ z_index = -201
 scale = Vector2(1e+06, 1e+06)
 texture = ExtResource("1_0v4ag")
 
-[node name="Player_Ship" parent="." node_paths=PackedStringArray("target") instance=ExtResource("1_xy7el")]
+[node name="Player_Ship" parent="." instance=ExtResource("1_xy7el")]
 z_index = 10
 position = Vector2(0.5, 0.5)
 state = 2
 set_ship = 1
-target = NodePath("../Enemy_Ship")
 camera_enabled = true
 
-[node name="Enemy_Ship" parent="." node_paths=PackedStringArray("target") instance=ExtResource("1_xy7el")]
+[node name="Enemy_Ship" parent="." instance=ExtResource("1_xy7el")]
 z_index = 1
 position = Vector2(0.5, 1000.5)
-rotation = 0.0872665
+rotation = 3.14159
 state = 3
 set_ship = 2
-target = NodePath("../Player_Ship")
-ship = Array[Array]([["cannon", "cannon", "cannon"], ["reflector", "core", "reflector"], ["engine", "engine", "engine"]])

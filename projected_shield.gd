@@ -1,5 +1,7 @@
 extends Sprite2D
 
+class_name Projected_Shield
+
 var source
 var active = true
 

@@ -23,14 +23,15 @@ func _process(delta: float) -> void:
 		queue_free()
 
 func _on_area_2d_area_entered(area: Area2D) -> void:
-	if area.get_parent().get_parent() != shooter:
+	if area.get_parent() is Ship_Element and area.get_parent().get_parent() != shooter:
 		if explodes:
 			for i in range(8):
 				var angle = i*PI/8
-				var chain_bullet : AnimatedSprite2D = preload("res://projectile.tscn").instantiate()
-				$/root/Space.add_child(chain_bullet)
+				var chain_bullet : Projectile = preload("res://projectile.tscn").instantiate()
 				chain_bullet.position = position
 				chain_bullet.rotation = rotation + angle
 				chain_bullet.velocity = velocity + Vector2.RIGHT.rotated(angle)*40
 				chain_bullet.shooter = shooter
+				chain_bullet.play("ClusterSplit")
+				$/root/Space.add_child(chain_bullet)
 		queue_free()

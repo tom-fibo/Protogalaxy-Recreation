@@ -7,7 +7,7 @@ enum Ship_Element_State {NONE, ONSHIP, PALATE}
 @export var x := 0
 @export var y := 0
 @export var state : Ship_Element_State = Ship_Element_State.NONE
-@export var internal_type := ""
+@export var internal_type : StringName = ""
 
 var my_ship : Node2D
 
@@ -43,7 +43,7 @@ func type(new_type : String = ""):
 func update_texture():
 	if state == Ship_Element_State.ONSHIP:
 		set_position(Vector2(x*my_ship.ship_spacing*15, y*my_ship.ship_spacing*15))
-	if type() == "none":
+	if type() == &"none":
 		if state == Ship_Element_State.PALATE or my_ship.state == Ship.Ship_State.EDITOR:
 			if state == Ship_Element_State.ONSHIP:
 				texture = preload("res://Assets/Images/ShipElements/EmptyPart.png")
@@ -61,16 +61,16 @@ func _input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 					var new_type = $"../%Palate".selected_ship_element
 					if new_type == "":
 						return
-					if new_type == "engine" and my_ship.read_ship(x, y+1) != "none":
-						new_type = "backwardengine"
-					if (new_type == "cannon" || new_type == "backwardengine" ) and my_ship.read_ship(x, y-1) != "none":
+					if new_type == &"engine" and my_ship.read_ship(x, y+1) != &"none":
+						new_type = &"backwardengine"
+					if new_type in [&"cannon", &"backwardengine", &"missilelauncher"] and my_ship.read_ship(x, y-1) != "none":
 						return
-					if type() == "none":
-						if my_ship.read_ship(x, y-1) == "engine":
-							my_ship.get_element(x, y-1).type("frame")
+					if type() == &"none" and new_type != &"none":
+						if my_ship.read_ship(x, y-1) == &"engine":
+							my_ship.get_element(x, y-1).type(&"frame")
 						var above = my_ship.read_ship(x, y+1)
-						if above == "cannon" or above == "backwardengine":
-							my_ship.get_element(x, y+1).type("frame")
+						if above in [&"cannon", &"backwardengine", &"missilelauncher"]:
+							my_ship.get_element(x, y+1).type(&"frame")
 					type(new_type)
 				update_texture()
 			Ship_Element_State.PALATE:
@@ -91,9 +91,9 @@ func _on_area_2d_area_entered(area: Area2D) -> void:
 func destroy_self(area: Area2D = null):
 	if area:
 		var area_parent = area.get_parent()
-		if "shooter" in area_parent and area_parent.shooter == my_ship:
+		if area_parent is Projectile and area_parent.shooter == my_ship:
 			return
-		if "source" in area_parent and area_parent.source == my_ship:
+		if area_parent is Projected_Shield and area_parent.source == my_ship:
 			return
 		var area_ship = area_parent.get_parent()
 		if area_ship == my_ship:
@@ -102,7 +102,7 @@ func destroy_self(area: Area2D = null):
 			if not area_parent.active:
 				return
 			area_parent.active = false
-		if (type() == "reflector") and ("shooter" in area_parent):
+		if area_parent is Projectile and type() == "reflector":
 			var proj = preload("res://projectile.tscn").instantiate()
 			$/root/Space.add_child(proj)
 			if area_parent.animation == "ClusterShot" or area_parent.animation == "ClusterSplit":
@@ -122,7 +122,7 @@ func destroy_self(area: Area2D = null):
 			#my_ship.launch_projectile([x, y], proj_vel)
 			#if randf() < .9:
 				#return
-		if "source" in area_parent:
+		if area_parent is Projected_Shield:
 			var pos_offset = my_ship.position - area_ship.position
 			var vel_offset = my_ship.velocity - area_ship.velocity
 			vel_offset = vel_offset.project(pos_offset)*((my_ship.ship_mass+area_ship.ship_mass)/2)
